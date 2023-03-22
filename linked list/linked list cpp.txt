@@ -1,0 +1,236 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+class node {
+	public : 
+	int data;
+	node * next;
+	node (int data):data{data}, next{nullptr}
+	{}
+};
+
+class LinkedList{
+	public:
+	node * head, *tail;
+	int totalNodes{0};
+
+	LinkedList():head{nullptr},tail{nullptr}
+	{}
+
+	LinkedList(int data){
+		node * newnode = new node{data};
+		head = newnode;
+		tail = newnode;
+		totalNodes++;
+	}
+	void prepend(int data){
+		node * newnode = new node {data};
+		newnode->next = head;
+		head = newnode;
+		totalNodes++;
+	}
+	void append(int data){
+		node * newnode = new node {data};
+		tail->next = newnode;
+		tail = newnode;
+		totalNodes++;
+	}
+	void insert(int data, int pos){
+		if (pos== 1)prepend(data);
+		else if (pos>totalNodes)append(data);
+		else {
+			node * newnode = new node{data};
+			node *temp = head;
+			for (int i=1;i<=pos-1;i++){
+				temp = temp->next;
+			}
+			newnode->next = temp->next;
+			temp->next = newnode;
+			totalNodes++;
+		}
+	}
+	void remove(int pos){
+		node * temp = head;
+		if (pos==1){
+			head = head->next;
+			free(temp);
+			totalNodes--;
+			return;
+		}
+		for (int i=1;i<pos-1 and temp!=NULL;i++){
+				temp = temp->next;
+		}
+		if (temp == NULL or temp->next == NULL)
+		{
+			cout<<"node not  present"<<endl;
+			return;
+		}	
+		node * newlink = temp->next->next;
+		free(temp->next);
+		temp->next = newlink;
+		totalNodes--;
+		return;
+	}
+	void show(){
+		node * temp = head;
+		while(temp!=NULL){
+			cout<<temp->data<<" ";
+			temp = temp->next;
+		}
+		cout<<endl;
+	}
+};
+
+node * recReverseList(node * head){
+	if (head == NULL or head->next==NULL)
+		return head;
+	node * shead = recReverseList(head->next);
+	head->next->next = head;
+	head->next = NULL;
+	return shead;
+}
+
+void iterReverseList(node * &head){
+	node * prev = NULL,
+	* current= head, 
+	* temp;
+	while(current!= NULL){
+		temp  = current->next;
+		current->next = prev;
+		prev = current;
+		current = temp;
+	}
+	head = prev;
+}
+
+node * kReverse(node * head, int k){
+	if(head==NULL){
+		return NULL;
+	}
+	node * prev = NULL,
+	* current= head, 
+	* temp;
+	int count = 1;
+	while(current!= NULL and count<=k){
+		temp  = current->next;
+		current->next = prev;
+		prev = current;
+		current = temp;
+		count++;
+	}
+	if(temp!=NULL){
+		 head->next = kReverse(temp,k);
+	}
+	return prev;
+}
+
+void mergeLists(node *h1, node *h2, LinkedList &List){
+	while(h1!=NULL or h2!=NULL){
+		if (h1==NULL){
+			List.append(h2->data);
+			h2 = h2->next;
+			continue;
+		}
+		else if (h2==NULL){
+			List.append(h1->data);
+			h1 = h1->next;
+			continue;
+		}
+
+		else if (h1->data > h2->data){
+			List.append(h2->data);
+			h2 = h2->next;;
+		}
+		else{
+			List.append(h1->data);
+			h1 = h1->next;
+		}
+	}
+}
+
+node * recMerge(node *h1, node * h2){
+	if (h1==NULL)return h2;
+	if (h2==NULL) return h1;
+
+	node *c ;
+	if (h1->data > h2->data){
+		c = h2;
+		c->next = recMerge(h1, h2->next);
+	}
+	else{
+		c = h1;
+		c->next = recMerge(h1->next, h2);
+	}
+
+	return c;
+}
+
+node * midPoint(node * head){
+	node * slow = head;
+	node * fast = head->next;
+
+	while (fast!=NULL and fast->next!= NULL){
+		slow = slow->next;
+		fast = fast->next->next;
+	}
+	return slow;
+}
+
+node * mergeSortLists(node * head){
+	if (head==NULL or head->next == NULL)
+		return head;
+
+	node * mid = midPoint(head);
+	
+	node *a = head;
+	node *b = mid->next;
+	mid->next = NULL;
+	
+	a =  mergeSortLists(head);
+	b =  mergeSortLists(b);
+
+	return recMerge(a,b);
+}
+
+
+int main() {
+	LinkedList newlist {1};
+	newlist.append(2);
+	newlist.append(3);
+	newlist.append(4);
+	newlist.append(5);
+	newlist.append(6);
+	newlist.append(7);
+	newlist.prepend(5);
+	newlist.remove(1);
+	newlist.show();
+	newlist.head = recReverseList(newlist.head);
+	newlist.show();
+	iterReverseList(newlist.head);
+	newlist.show();
+	cout<<endl;
+	int k =3;
+	newlist.head = kReverse(newlist.head, k);
+	newlist.show();
+
+	LinkedList list1{1};
+	list1.append(3);
+	list1.append(5);
+	list1.append(7);
+	list1.show();
+	
+	LinkedList list2{2};
+	list2.append(4);
+	list2.append(6);
+	list2.append(8);
+	list2.show();
+
+	cout<<endl;
+	LinkedList mergedList;
+	mergedList.head = recMerge(list1.head, list2.head);
+	mergedList.show();
+	cout<<endl;
+
+	newlist.head = mergeSortLists(newlist.head);
+	newlist.show();
+}
